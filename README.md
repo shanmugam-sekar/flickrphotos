@@ -11,7 +11,7 @@ you can search photos from flickr
   viewcontroller operates on values from this viewmodel class. responsible to communicate with service class.
 
 #  FlickrPhotoSearchService :-
-  calls API layer. This layer will abstract fetching data part . data will come from either api or some persistance storage. 
+  calls API layer. Service layer will abstract fetching data part . data will come from either api or some persistance storage. 
 
 # FlickrPhotosSearchAPI :-
   calls Network manager layer and responsible for parsing the response.
