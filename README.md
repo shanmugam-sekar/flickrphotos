@@ -1,6 +1,17 @@
 # flickrphotos
 you can search photos from flickr
 
+# Models :-
+  Photo, PhotosList, FlickrPhotoSearchResponse - handled success and failure flickr responses.
+  
+  FlickrPhotosViewController - responsible for the UI representation.
+  FlickrPhotosViewModel - viewcontroller operates on values from this viewmodel class. responsible to communicate with service class.
+  FlickrPhotoSearchService - calls API . This layer will abstract fetching data part . data will come from either api or some persistance storage. 
+  FlickrPhotosSearchAPI - calls Network manager class and responsible for parsing the response.
+  FlickrPhotosNetworkManager - calls underlying ios network api and prepares requests.
+  ImageDownloader - responsible to download image and caching it. 
+  
+
 # NSCache :-
   Used to implement image caching. 
   Default cache size set to 50MB but it is configurable.
