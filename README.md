@@ -1,6 +1,9 @@
 # flickrphotos
 you can search photos from flickr
 
+# Enviroment :-
+  XCode 10.2.1 used while developing.
+
 # Models :-
   Photo, PhotosList, FlickrPhotoSearchResponse - handled success and failure flickr responses.
   
