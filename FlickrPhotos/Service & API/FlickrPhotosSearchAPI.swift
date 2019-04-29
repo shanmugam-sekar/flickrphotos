@@ -91,7 +91,7 @@ struct Parser<T: Decodable> {
         var result: T
         do {
             result = try JSONDecoder().decode(T.self, from: data)
-        } catch  {
+        } catch {
             throw error
         }
         return result

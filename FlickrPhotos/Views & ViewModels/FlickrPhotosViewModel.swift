@@ -36,7 +36,10 @@ class FlickrPhotosViewModel: NSObject {
     private var currentPage = 0
     private let service: PhotoSearchService
     private var isLoading: Bool = false
-    private var query: String = ""
+    private var lastQuery: String = ""
+    var page: Int {
+        return currentPage
+    }
     
     var viewState: Observable<ViewState> = Observable<ViewState>(value: .loading)
     
@@ -49,7 +52,7 @@ class FlickrPhotosViewModel: NSObject {
     }
     
     func previousQuery() -> String {
-        return query
+        return lastQuery
     }
     
     func getPhotosCount() -> Int {
@@ -78,10 +81,10 @@ class FlickrPhotosViewModel: NSObject {
         }
         viewState.value = .loading
         isLoading = true
-        self.query = query
         
         service.fetchPhotos(params: QueryParams(query: query, page: currentPage, perPage: FlickrPhotosViewModel.perPage)) { [unowned self] (result) in
             self.isLoading = false
+            self.lastQuery = query
             switch result {
             case .success(let data):
                 switch fetchMode {

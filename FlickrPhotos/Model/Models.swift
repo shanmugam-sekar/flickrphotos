@@ -48,7 +48,7 @@ struct FlickrPhotoSearchResponse: Decodable {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         let tempStat = try container.decode(String.self, forKey: .stat)
         status = tempStat == "ok"
-        photos = try! container.decode(PhotosList.self, forKey: .photos)
+        photos = try? container.decode(PhotosList.self, forKey: .photos)
         code = try? container.decode(Int.self, forKey: .code)
         message = try? container.decode(String.self, forKey: .message)
     }
