@@ -66,7 +66,7 @@ struct FlickrPhotosSearchAPI: PhotosSearchAPI {
         networkManager.get(request: request) { (result) in
             switch result {
             case .success(let data):
-                if let response = try? JSONDecoder().decode(FlickrPhotoSearchResponse.self, from: data) {
+                if let response = try? Parser<FlickrPhotoSearchResponse>().parse(data: data) {
                     if response.status, let photos = response.photos {
                         completion(.success(photos))
                     } else {
@@ -83,6 +83,18 @@ struct FlickrPhotosSearchAPI: PhotosSearchAPI {
                 completion(.failure(error))
             }
         }
+    }
+}
+
+struct Parser<T: Decodable> {
+    func parse(data: Data) throws -> T  {
+        var result: T
+        do {
+            result = try JSONDecoder().decode(T.self, from: data)
+        } catch  {
+            throw error
+        }
+        return result
     }
 }
 

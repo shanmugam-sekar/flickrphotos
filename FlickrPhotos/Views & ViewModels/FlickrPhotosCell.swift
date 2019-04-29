@@ -32,7 +32,7 @@ class FlickrPhotosCell: UICollectionViewCell {
         guard let path = viewModel.path else {
             return
         }
-        ImageDownloader.sharedImageDownloader.fetch(path: path, placeHolderImage: nil) { [weak self] (image) in
+        ImageDownloader.sharedImageDownloader.fetch(path: path, placeHolderImage: UIImage.init(named: "placeholder")) { [weak self] (image) in
             if let self = self, path == viewModel.path {
                 self.image.image = image
             }
