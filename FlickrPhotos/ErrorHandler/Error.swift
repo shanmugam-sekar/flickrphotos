@@ -15,11 +15,11 @@ enum Error: Swift.Error {
     case parsing(String)
     case unknown(String)
     
-    enum HTTPError: Swift.Error {
+    enum HTTPError: CustomStringConvertible {
         case serverError(Int)
         case clientError(Int)
         
-        var localizedDescription: String {
+        var description: String {
             let string: String
             switch self {
             case .serverError(_):
@@ -44,7 +44,7 @@ enum Error: Swift.Error {
         }
     }
     
-    enum URLLoadingError: Swift.Error {
+    enum URLLoadingError: CustomStringConvertible {
         case notConnectedToInternet
         case badURL
         case cannotConnectToHost
@@ -52,7 +52,7 @@ enum Error: Swift.Error {
         case badServerResponse
         case unknown
         
-        var localizedDescription: String {
+        var description: String {
             let string: String
             switch self {
             case .notConnectedToInternet:
@@ -96,9 +96,9 @@ enum Error: Swift.Error {
         let string: String
         switch self {
         case .http(let http):
-            string = http.localizedDescription
+            string = http.description
         case .urlLoading(let urlLoading):
-            string = urlLoading.localizedDescription
+            string = urlLoading.description
         case .flickrApi(_, let message):
             string = message
         case .parsing(let message):
