@@ -50,6 +50,6 @@ class ViewModelTests: XCTestCase {
 
 class MockPhotoSearchService: PhotoSearchService {
     func fetchPhotos(params: QueryParams, completion: @escaping PhotoSearchService.searchAPIResult) {
-        completion(.failure(NSError.init(domain: "test", code: 1000, userInfo: [NSLocalizedDescriptionKey: "Testing Purpose"])))
+//        completion(.failure(NSError.init(domain: "test", code: 1000, userInfo: [NSLocalizedDescriptionKey: "Testing Purpose"])))
     }
 }

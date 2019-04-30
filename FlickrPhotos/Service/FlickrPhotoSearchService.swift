@@ -15,7 +15,7 @@ struct QueryParams {
 }
 
 protocol PhotoSearchService {
-    typealias searchAPIResult = (Result<PhotosList, NSError>) -> Void
+    typealias searchAPIResult = (Result<PhotosList, Error>) -> Void
     func fetchPhotos(params: QueryParams, completion: @escaping searchAPIResult)
 }
 

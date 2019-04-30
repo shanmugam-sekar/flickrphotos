@@ -28,7 +28,7 @@ class FlickrPhotosViewModel: NSObject {
         return "photoCell"
     }
     var initialSearchQuery: String {
-        return "random"
+        return ""
     }
     private static let perPage = 50
     

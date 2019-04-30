@@ -9,7 +9,7 @@
 import Foundation
 
 protocol NetworkManager {
-    typealias resultHandler = (Result<Data,NSError>) -> Void
+    typealias resultHandler = (Result<Data,Error>) -> Void
     func configure(session: URLSession)
     func get(request: Request, completion: @escaping resultHandler)
     func download(request: Request, completion: @escaping resultHandler)
@@ -25,26 +25,6 @@ enum HTTPMethod: String {
     case get = "GET"
 }
 
-enum NetworkError: Int, Error {
-    case invalidURL = 1000
-    case unknown 
-    
-    var localizedDescription: String {
-        var string: String
-        switch self {
-        case .invalidURL:
-            string = "i think given path is not valid."
-        case .unknown:
-            string = "unknown error occured"
-        }
-        return string
-    }
-    
-    func getErrorObject() -> NSError {
-        return NSError.init(domain: Constants.domain, code: self.rawValue, userInfo: [NSLocalizedDescriptionKey: self.localizedDescription])
-    }
-}
-
 class FlickrPhotosNetworkManager: NetworkManager {
     
     static let sharedNetworkManager: NetworkManager = FlickrPhotosNetworkManager()
@@ -58,45 +38,49 @@ class FlickrPhotosNetworkManager: NetworkManager {
         self.session = session
     }
     
-    func get(request: Request, completion: @escaping (Result<Data, NSError>) -> Void) {
+    func get(request: Request, completion: @escaping (Result<Data, Error>) -> Void) {
         do {
             let urlRequest = try URLRequest.prepare(from: request)
             session.dataTask(with: urlRequest) { (data, response, error) in
-                if let data = data {
+                if let responseError = Error.init(response: response) {
+                    completion(.failure(responseError))
+                } else if let httpError = Error.init(error: error) {
+                    completion(.failure(httpError))
+                } else if let data = data {
                     completion(.success(data))
-                } else {
-                    completion(.failure(NetworkError.unknown.getErrorObject()))
                 }
             }.resume()
         } catch {
-            if let error = error as? NetworkError {
-                completion(.failure(error.getErrorObject()))
+            if let error = Error.init(error: error) {
+                completion(.failure(error))
             }
         }
     }
     
-    func download(request: Request, completion: @escaping (Result<Data, NSError>) -> Void) {
+    func download(request: Request, completion: @escaping (Result<Data, Error>) -> Void) {
         do {
             let urlRequest = try URLRequest.prepare(from: request)
             session.downloadTask(with: urlRequest) { (url, response, error) in
-                if let url = url, let data = try? Data.init(contentsOf: url) {
+                if let responseError = Error.init(response: response) {
+                    completion(.failure(responseError))
+                } else if let httpError = Error.init(error: error) {
+                    completion(.failure(httpError))
+                } else if let url = url, let data = try? Data.init(contentsOf: url) {
                     completion(.success(data))
-                } else {
-                    completion(.failure(NetworkError.unknown.getErrorObject()))
                 }
             }.resume()
         } catch {
-            if let error = error as? NetworkError {
-                completion(.failure(error.getErrorObject()))
+            if let error = Error.init(error: error) {
+                completion(.failure(error))
             }
         }
-    }       
+    }
 }
 
 extension URLRequest {
     static func prepare(from request: Request) throws -> URLRequest {
         guard let url = URL.init(string: request.path) else {
-            throw NetworkError.invalidURL
+            throw NSError.init(domain: NSURLErrorDomain, code: NSURLErrorBadURL, userInfo: nil)
         }
         var queryItems: [URLQueryItem] = []
         if let data = request.parameters {
@@ -106,13 +90,13 @@ extension URLRequest {
             }
         }
         guard var urlComponents = URLComponents(url: url, resolvingAgainstBaseURL: false) else {
-            throw NetworkError.invalidURL
+            throw NSError.init(domain: NSURLErrorDomain, code: NSURLErrorBadURL, userInfo: nil)
         }
         if !queryItems.isEmpty {
             urlComponents.queryItems = queryItems
         }
         guard let resultURL = urlComponents.url else {
-            throw NetworkError.invalidURL
+            throw NSError.init(domain: NSURLErrorDomain, code: NSURLErrorBadURL, userInfo: nil)
         }
         var urlRequest = URLRequest(url: resultURL)
         urlRequest.httpMethod = request.method.rawValue
