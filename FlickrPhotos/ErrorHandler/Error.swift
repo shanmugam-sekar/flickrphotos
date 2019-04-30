@@ -15,6 +15,28 @@ enum Error: Swift.Error {
     case parsing(String)
     case unknown(String)
     
+    var localizedDescription: String {
+        let string: String
+        switch self {
+        case .http(let http):
+            string = http.description
+        case .urlLoading(let urlLoading):
+            string = urlLoading.description
+        case .flickrApi(_, let message):
+            string = message
+        case .parsing(let message):
+            string = message
+        case .unknown(let message):
+            string = message
+        @unknown default:
+            string = ""
+        }
+        return string
+    }
+}
+
+extension Error {
+    
     enum HTTPError: CustomStringConvertible {
         case serverError(Int)
         case clientError(Int)
@@ -90,25 +112,6 @@ enum Error: Swift.Error {
                 self = .unknown
             }
         }
-    }
-    
-    var localizedDescription: String {
-        let string: String
-        switch self {
-        case .http(let http):
-            string = http.description
-        case .urlLoading(let urlLoading):
-            string = urlLoading.description
-        case .flickrApi(_, let message):
-            string = message
-        case .parsing(let message):
-            string = message
-        case .unknown(let message):
-            string = message
-        @unknown default:
-            string = ""
-        }
-        return string
     }
 }
 
