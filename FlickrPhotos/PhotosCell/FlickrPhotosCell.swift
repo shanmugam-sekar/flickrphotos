@@ -15,6 +15,7 @@ class FlickrPhotosCell: UICollectionViewCell {
         var placeholder: String?
     }
 
+    @IBOutlet weak var loader: UIActivityIndicatorView!
     @IBOutlet weak var image: UIImageView!
     private var viewModel: ViewModel!
     private var downloader: ImageDownloader! = ImageDownloader.sharedImageDownloader
@@ -26,6 +27,7 @@ class FlickrPhotosCell: UICollectionViewCell {
     
     override func prepareForReuse() {
         super.prepareForReuse()
+        loader.stopAnimating()
         self.image.image = UIImage()
     }
     
@@ -35,8 +37,10 @@ class FlickrPhotosCell: UICollectionViewCell {
             return
         }
         let placehoder: UIImage? = (viewModel.placeholder != nil) ? UIImage.init(named: viewModel.placeholder!) : nil
+        loader.startAnimating()
         downloader.download(path: path, placeHolderImage: placehoder) { [weak self] (image) in
             if let self = self, path == viewModel.path {
+                self.loader.stopAnimating()
                 self.image.image = image
             }
         }

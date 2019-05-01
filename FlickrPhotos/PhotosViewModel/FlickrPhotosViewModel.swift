@@ -8,98 +8,221 @@
 
 import Foundation
 
-enum FetchMode: Int {
-    case initial = 1
-    case bottom
-    case manual
+enum FetchMode {
+    case refresh(String)
+    case loadMore
+}
+
+extension FetchMode : RawRepresentable, Equatable {
+    
+    typealias RawValue = (Int, String?)
+    
+    init?(rawValue: FetchMode.RawValue) {
+        switch rawValue {
+        case (0,let x):
+            self = .refresh(x ?? "")
+        case (1,_):
+            self = .loadMore
+        default:
+            return nil
+        }
+    }
+ 
+    var rawValue: (Int, String?) {
+        let value: (Int, String?)
+        switch self {
+        case .refresh(let x):
+            value = (0, x)
+        case .loadMore:
+            value = (1, nil)
+        @unknown default:
+            return (-1, nil)
+        }
+        return value
+    }
+    
+    static func == (lhs: FetchMode, rhs: FetchMode) -> Bool {
+        return lhs.rawValue.0 == rhs.rawValue.0
+    }
 }
 
 enum ViewState {
-    case loading
+    case launched
+    case fetching(FetchMode)
     case success(FetchMode)
-    case error(FetchMode,String)
+    case error(FetchMode, String)
 }
 
-class FlickrPhotosViewModel: NSObject {
-    var searchPlaceHolder: String {
-        return "Explore your favourites"
-    }
-    var photosListCellIdentifier: String {
-        return "photoCell"
-    }
-    var initialSearchQuery: String {
-        return ""
-    }
-    private static let perPage = 50
+extension ViewState: RawRepresentable, Equatable {
     
-    private var photos = [Photo]()
-    private var currentPage = 0
+    typealias RawValue = (Int, FetchMode?, String?)
+    
+    init?(rawValue: ViewState.RawValue) {
+        switch rawValue {
+        case (0, _, _):
+            self = .launched
+        case let (1, mode, _) where mode != nil:
+            self = .fetching(mode!)
+        case let (2, mode, _) where mode != nil:
+            self = .success(mode!)
+        case let (3, mode, message) where (mode != nil && message != nil):
+            self = .error(mode!, message!)
+        default:
+            return nil
+        }
+    }
+
+    var rawValue: ViewState.RawValue {
+        let result: ViewState.RawValue
+        switch self {
+        case .launched:
+            result = (0, nil, nil)
+        case .fetching(let mode):
+            result = (1, mode, nil)
+        case .success(let mode):
+            result = (2, mode, nil)
+        case .error(let mode, let string):
+            result = (3, mode, string)
+        @unknown default:
+            result = (-1, nil, nil)
+        }
+        return result
+    }
+    
+    func getFetchMode() -> FetchMode? {
+        var mode: FetchMode?
+        switch self {
+        case .fetching(let currentMode):
+            mode = currentMode
+        case .success(let currentMode):
+            mode = currentMode
+        case .error(let currentMode, _):
+            mode = currentMode
+        default:
+            return nil
+        }
+        return mode
+    }
+    
+    static func == (lhs: ViewState, rhs: ViewState) -> Bool {
+        return lhs.rawValue.0 == rhs.rawValue.0
+    }
+}
+
+protocol PhotosViewModel: class {
+    init(service: PhotoSearchService)
+    var count: Int {get}
+    var delegate: PhotosViewModelDelegate? {get set}
+    func getPhotoViewModel(at index: Int) -> FlickrPhotosCell.ViewModel
+    func fetchPhotos(fetchMode: FetchMode)
+    func emitEvents()
+}
+
+protocol PhotosViewModelDelegate: class {
+    func onStateChange(_ state: ViewState)
+}
+
+class FlickrPhotosViewModel: PhotosViewModel {
+   
+    private let perPage = 50
+    private var viewState: ViewState
+    private var photos: [Photo]
+    private var searchQuery: String
+    private var currentPage: Int
     private let service: PhotoSearchService
-    private var isLoading: Bool = false
-    private var lastQuery: String = ""
-    var page: Int {
-        return currentPage
-    }
+    weak var delegate: PhotosViewModelDelegate?
     
-    var viewState: Observable<ViewState> = Observable<ViewState>(value: .loading)
-    
-    init(service: PhotoSearchService = FlickrPhotoSearchService()) {
-        self.service = service
-    }
-    
-    func canFetchList() -> Bool {
-        return !isLoading
-    }
-    
-    func previousQuery() -> String {
-        return lastQuery
-    }
-    
-    func getPhotosCount() -> Int {
+    var count: Int {
         return photos.count
     }
+ 
+    required init(service: PhotoSearchService = FlickrPhotoSearchService()) {
+        self.service = service
+        self.viewState = ViewState.launched
+        self.photos = []
+        self.searchQuery = ""
+        self.currentPage = 0
+    }
     
-    func getPhotosCellViewModel(at index: Int) -> FlickrPhotosCell.ViewModel {
+    func emitEvents() {
+        viewState = .launched
+        delegate?.onStateChange(viewState)
+    }
+    
+    func getPhotoViewModel(at index: Int) -> FlickrPhotosCell.ViewModel {
         let photo = photos[index]
         var viewModel = FlickrPhotosCell.ViewModel()
         viewModel.path = photo.path
+        viewModel.placeholder = "placeholder"
         return viewModel
     }
     
-    private func changeViewState(_ state: ViewState) {
-        self.viewState.value = state        
-    }
-    
-    func fetchPhotosList(for query: String, fetchMode: FetchMode) {
-        switch fetchMode {
-        case .initial:
-            currentPage = 1
-        case .manual:
-            currentPage = 1
-        default:
-            currentPage = currentPage + 1
-        }
-        viewState.value = .loading
-        isLoading = true
+    func fetchPhotos(fetchMode: FetchMode) {
         
-        service.fetchPhotos(params: QueryParams(query: query, page: currentPage, perPage: FlickrPhotosViewModel.perPage)) { [unowned self] (result) in
-            self.isLoading = false
-            self.lastQuery = query
+        guard canFetchPhotos(viewState: viewState, fetchMode: fetchMode) else {
+            return
+        }
+        
+        changeViewState(.fetching(fetchMode))
+        currentPage = getPageNumber(fetchMode: fetchMode, currentPage: currentPage)
+        searchQuery =  getSearchQuery(fetchMode: fetchMode, currentQuery: searchQuery)
+        let queryParams = QueryParams(query: searchQuery, page: currentPage, perPage: perPage)
+        
+        service.fetchPhotos(params: queryParams) { [unowned self] (result) in
             switch result {
             case .success(let data):
                 switch fetchMode {
-                case .initial:
-                    fallthrough
-                case .manual:
+                case .refresh:
                     self.photos = data.photo
-                case .bottom:
+                case .loadMore:
                     self.photos.append(contentsOf: data.photo)
                 }
-                self.changeViewState(.success(fetchMode))
+                self.changeViewState(ViewState.success(fetchMode))
             case .failure(let error):
-                self.changeViewState(.error(fetchMode,error.localizedDescription))
+                self.changeViewState(ViewState.error(fetchMode, error.localizedDescription))
             }
-            
         }
     }
+    
+    func getPageNumber(fetchMode: FetchMode, currentPage: Int) -> Int {
+        var pageNumber = 0
+        switch fetchMode {
+        case .refresh(_):
+            pageNumber = 1
+        case .loadMore:
+            pageNumber = currentPage + 1
+        }
+        return pageNumber
+    }
+    
+    func getSearchQuery(fetchMode: FetchMode, currentQuery: String) -> String {
+        let query: String
+        switch fetchMode {
+        case .refresh(let x):
+            query = x
+        case .loadMore:
+            query = currentQuery
+        }
+        return query
+    }
+    
+    private func changeViewState(_ viewState: ViewState) {
+        self.viewState = viewState
+        self.delegate?.onStateChange(viewState)
+    }
+    
+    private func canFetchPhotos(viewState: ViewState, fetchMode: FetchMode) -> Bool {
+        
+        //controls triggering multiple api calls by reaching page end when previous call in progress
+        if (viewState.getFetchMode() != nil) && (viewState == ViewState.fetching(viewState.getFetchMode()!)) {
+            return false
+        }
+        
+        //controls making an api call by reaching an bottom when an api call for search in progress
+        if (viewState.getFetchMode() != nil) && (fetchMode == FetchMode.loadMore) && (viewState == ViewState.fetching(viewState.getFetchMode()!)) {
+            return false
+        }
+        return true
+    }
 }
+

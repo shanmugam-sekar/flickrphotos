@@ -9,7 +9,7 @@
 import Foundation
 import UIKit.UIImage
 
-class ImageDownloader {
+final class ImageDownloader {
     
     static let sharedImageDownloader = ImageDownloader()
     private var cache: Cache!

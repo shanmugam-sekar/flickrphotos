@@ -25,7 +25,7 @@ struct Request {
     }
 }
 
-class FlickrPhotosNetworkManager: NetworkManager {
+final class FlickrPhotosNetworkManager: NetworkManager {
     
     static let sharedNetworkManager: NetworkManager = FlickrPhotosNetworkManager()
     private var session: URLSession!

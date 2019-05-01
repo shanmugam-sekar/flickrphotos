@@ -15,7 +15,7 @@ protocol Cache {
     func clearData()
 }
 
-class SimpleCache: Cache {
+final class SimpleCache: Cache {
     
     static let sharedCache: Cache = SimpleCache()
     

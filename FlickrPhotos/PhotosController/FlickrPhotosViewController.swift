@@ -10,59 +10,60 @@ import UIKit
 
 class FlickrPhotosViewController: UIViewController {
     
+    struct Constants {
+        static let searchPlaceHolder = "Explore your favourites"
+        static let photosListCellIdentifier = "photoCell"
+    }
+    
+    private var viewModel: PhotosViewModel!
     private var collectionView: UICollectionView!
-    private var loader: UIActivityIndicatorView!
+    private var loader: Loader!
+    private var searchBar: UISearchBar!
     private lazy var photoSize: CGSize = {
         let viewWidth = UIScreen.main.bounds.size.width
         let photoWidth = (viewWidth/3) - 10
         return CGSize(width: photoWidth, height: photoWidth)
     }()
-    var viewModel: FlickrPhotosViewModel = FlickrPhotosViewModel()
+    
+    override func awakeFromNib() {
+        super.awakeFromNib()
+        configureViewModel()
+    }
+    
+    override func loadView() {
+        super.loadView()
+        configureViewModel()
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
         setupSearchBar()
         setupCollectionView()
-        setupActivityIndicatorView()
-        viewModel.viewState.valueChanged = { [weak self] (value) in
-            guard let value = value, let self = self else {
-                return
-            }
-            switch value {
-            case .loading:
-                self.loader.startAnimating()
-            case .success(let mode):
-                self.loader.stopAnimating()
-                if mode == .manual {
-                    CATransaction.begin()
-                    self.collectionView.reloadData()
-                    CATransaction.setCompletionBlock({
-                        self.collectionView.scrollRectToVisible(CGRect(origin: .zero, size: self.photoSize), animated: false)
-                    })
-                    CATransaction.commit()
-                } else {
-                    self.collectionView.reloadData()
-                }
-            case .error(_,let error):
-                self.loader.stopAnimating()
-                self.showAlert(error)
-            }
-        }
+        setupLoader()
+        setupLoaderVisibility(false)
+        viewModel.delegate = self
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        viewModel.fetchPhotosList(for: viewModel.initialSearchQuery, fetchMode: .initial)
+        viewModel.emitEvents()
     }
-
+    
+    func configureViewModel(_ viewModel: PhotosViewModel = FlickrPhotosViewModel()) {
+        self.viewModel = viewModel
+    }
+    
     private func setupSearchBar() {
         if let navigationController = navigationController {
             let frame = CGRect(origin: .zero, size: navigationController.navigationBar.frame.size)
             let searchBar = UISearchBar(frame: frame)
             searchBar.delegate = self
-            searchBar.placeholder = viewModel.searchPlaceHolder
+            searchBar.placeholder = FlickrPhotosViewController.Constants.searchPlaceHolder
             searchBar.returnKeyType = .search
             navigationItem.titleView = searchBar
+            self.searchBar = searchBar
+        } else {
+            fatalError("Intialise viewcontroller with navigation controller")
         }
     }
     
@@ -75,7 +76,7 @@ class FlickrPhotosViewController: UIViewController {
     private func setupCollectionView() {
         let photosCollectionView = UICollectionView.init(frame: .zero, collectionViewLayout: setupCollectionViewLayout())
         photosCollectionView.backgroundColor = UIColor.white
-        photosCollectionView.register(UINib.init(nibName: "FlickrPhotosCell", bundle: nil), forCellWithReuseIdentifier: viewModel.photosListCellIdentifier)
+        photosCollectionView.register(UINib.init(nibName: "FlickrPhotosCell", bundle: nil), forCellWithReuseIdentifier: FlickrPhotosViewController.Constants.photosListCellIdentifier)
         photosCollectionView.translatesAutoresizingMaskIntoConstraints = false
         photosCollectionView.dataSource = self
         photosCollectionView.delegate = self
@@ -86,21 +87,30 @@ class FlickrPhotosViewController: UIViewController {
         view.addConstraint(NSLayoutConstraint.init(item: photosCollectionView, attribute: .leading, relatedBy: .equal, toItem: view, attribute: .leading, multiplier: 1.0, constant: 0))
         view.addConstraint(NSLayoutConstraint.init(item: photosCollectionView, attribute: .trailing, relatedBy: .equal, toItem: view, attribute: .trailing, multiplier: 1.0, constant: 0))
         view.addConstraint(NSLayoutConstraint.init(item: photosCollectionView, attribute: .top, relatedBy: .equal, toItem: view, attribute: .top, multiplier: 1.0, constant: 0))
-        view.addConstraint(NSLayoutConstraint.init(item: photosCollectionView, attribute: .bottom, relatedBy: .equal, toItem: view, attribute: .bottomMargin, multiplier: 1.0, constant: -40))
+        view.addConstraint(NSLayoutConstraint.init(item: photosCollectionView, attribute: .bottom, relatedBy: .equal, toItem: view, attribute: .bottomMargin, multiplier: 1.0, constant: 0))
         
         collectionView = photosCollectionView
     }
 
-    private func setupActivityIndicatorView() {
-        let activityIndicatorView = UIActivityIndicatorView.init(style: .gray)
-        activityIndicatorView.color = UIColor.red
-        activityIndicatorView.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(activityIndicatorView)
+    private func setupLoader() {
+        let loader = Loader.init(frame: .zero)
+        loader.translatesAutoresizingMaskIntoConstraints = false
+        loader.backgroundColor = UIColor.blue
+        loader.layer.cornerRadius = 5.0
+        loader.clipsToBounds = true
+        view.addSubview(loader)
         
-        view.addConstraint(NSLayoutConstraint.init(item: activityIndicatorView, attribute: .centerX, relatedBy: .equal, toItem: view, attribute: .centerX, multiplier: 1.0, constant: 0))
-        view.addConstraint(NSLayoutConstraint.init(item: activityIndicatorView, attribute: .bottom, relatedBy: .equal, toItem: view, attribute: .bottomMargin, multiplier: 1.0, constant: 0))
-        
-        loader = activityIndicatorView
+        loader.leadingAnchor.constraint(equalTo: view.leadingAnchor).isActive = true
+        loader.trailingAnchor.constraint(equalTo: view.trailingAnchor).isActive = true
+        loader.bottomAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
+        loader.heightAnchor.constraint(equalToConstant: 50.0).isActive = true
+
+        self.loader = loader
+    }
+    
+    private func setupLoaderVisibility(_ visibility: Bool) {
+        loader.isHidden = !visibility
+        visibility ? loader.startAnimating() : loader.stopAnimating()
     }
     
     private func showAlert(_ message: String) {
@@ -111,38 +121,112 @@ class FlickrPhotosViewController: UIViewController {
     }
 }
 
+extension FlickrPhotosViewController: PhotosViewModelDelegate {
+    func onStateChange(_ state: ViewState) {
+        DispatchQueue.main.async { [weak self] in
+            if let self = self {
+                switch state {
+                case .launched:
+                    self.searchBar.becomeFirstResponder()
+                case .fetching(_):
+                    self.setupLoaderVisibility(true)
+                case .error(_, let message):
+                    self.setupLoaderVisibility(false)
+                    self.showAlert(message)
+                case .success(let mode):
+                    self.setupLoaderVisibility(false)
+                    if mode == .refresh("") {
+                        CATransaction.begin()
+                        self.collectionView.reloadData()
+                        CATransaction.setCompletionBlock({
+                            self.collectionView.scrollRectToVisible(CGRect(origin: .zero, size: self.photoSize), animated: false)
+                        })
+                        CATransaction.commit()
+                    } else {
+                        self.collectionView.reloadData()
+                    }
+                }
+            }
+        }
+    }
+}
+
 extension FlickrPhotosViewController : UISearchBarDelegate {
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
         searchBar.resignFirstResponder()
-        viewModel.fetchPhotosList(for: searchBar.text ?? "", fetchMode: .manual)
+        viewModel.fetchPhotos(fetchMode: .refresh(searchBar.text ?? ""))
     }
 }
 
 extension FlickrPhotosViewController: UICollectionViewDelegate, UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: viewModel.photosListCellIdentifier, for: indexPath)
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: FlickrPhotosViewController.Constants.photosListCellIdentifier, for: indexPath)
         if let photoCell = cell as? FlickrPhotosCell {
-            photoCell.feedCell(with: viewModel.getPhotosCellViewModel(at: indexPath.row))
+            photoCell.feedCell(with: viewModel.getPhotoViewModel(at: indexPath.row))
         }
         return cell
     }
-    
+
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return viewModel.getPhotosCount()
+        return viewModel.count
     }
-    
+
     func numberOfSections(in collectionView: UICollectionView) -> Int {
         return 1
     }
-    
+
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
-        if isPhotosViewReachedBottom(scrollView) && viewModel.canFetchList() {
-            viewModel.fetchPhotosList(for: viewModel.previousQuery(), fetchMode: .bottom)
+        if isPhotosViewReachedBottom(scrollView) {
+            viewModel.fetchPhotos(fetchMode: .loadMore)
         }
     }
-    
+
     private func isPhotosViewReachedBottom(_ scrollView: UIScrollView) -> Bool {
         return round(scrollView.frame.size.height  + scrollView.contentOffset.y) >= round(scrollView.contentSize.height)
     }
 }
 
+class Loader: UIView {
+    
+    private var loader: UIActivityIndicatorView!
+    
+    required init?(coder aDecoder: NSCoder) {
+        super.init(coder: aDecoder)
+        setup()
+    }
+    
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        setup()
+    }
+    
+    private func setup() {
+        
+        let activityIndicatorView = UIActivityIndicatorView.init(style: .gray)        
+        activityIndicatorView.translatesAutoresizingMaskIntoConstraints = false
+        activityIndicatorView.tintColor = UIColor.white
+        addSubview(activityIndicatorView)
+        
+        let label = UILabel.init(frame: .zero)
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.text = "Loading"
+        label.textColor = UIColor.white
+        addSubview(label)
+        
+        activityIndicatorView.centerYAnchor.constraint(equalTo: self.centerYAnchor).isActive = true
+        activityIndicatorView.trailingAnchor.constraint(equalTo: label.leadingAnchor, constant: -10.0).isActive = true
+        
+        label.centerXAnchor.constraint(equalTo: self.centerXAnchor).isActive = true
+        label.centerYAnchor.constraint(equalTo: self.centerYAnchor).isActive = true
+        
+        loader = activityIndicatorView
+    }
+    
+    func startAnimating() {
+        loader.startAnimating()
+    }
+    
+    func stopAnimating() {
+        loader.stopAnimating()
+    }
+}
