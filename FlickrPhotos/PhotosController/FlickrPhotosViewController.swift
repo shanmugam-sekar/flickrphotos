@@ -128,6 +128,10 @@ extension FlickrPhotosViewController: PhotosViewModelDelegate {
                 switch state {
                 case .launched:
                     self.searchBar.becomeFirstResponder()
+                case .empty(let message):
+                    self.setupLoaderVisibility(false)
+                    self.collectionView.reloadData()
+                    self.showAlert(message)
                 case .fetching(_):
                     self.setupLoaderVisibility(true)
                 case .error(_, let message):

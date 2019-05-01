@@ -33,7 +33,14 @@ struct FlickrPhotosSearchAPI: PhotosSearchAPI {
                 do {
                     let response = try Parser<FlickrPhotoSearchResponse>().parse(data: data)
                     if response.status, let photos = response.photos {
-                        completion(.success(photos))
+                        if photos.photo.isEmpty {
+                            let error = NSError.init(domain: Error.ApplicationDomain, code: response.code ?? -1, userInfo: [NSLocalizedDescriptionKey: "No photos matches your query"])
+                            if let result = Error.init(error: error) {
+                                completion(.failure(result))
+                            }
+                        } else {
+                            completion(.success(photos))
+                        }                        
                     } else if let tempCode = response.code, let message = response.message {
                         let error = NSError.init(domain: Error.FlickrAPIDomain, code: tempCode, userInfo: [NSLocalizedDescriptionKey: message])
                         if let result = Error.init(error: error) {

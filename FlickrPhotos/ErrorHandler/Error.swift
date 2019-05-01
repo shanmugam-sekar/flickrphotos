@@ -13,6 +13,7 @@ enum Error: Swift.Error {
     case urlLoading(URLLoadingError)
     case flickrApi(Int, String)
     case parsing(String)
+    case noData(String)
     case unknown(String)
     
     var localizedDescription: String {
@@ -26,6 +27,8 @@ enum Error: Swift.Error {
             string = message
         case .parsing(let message):
             string = message
+        case .noData(let message):
+            string = message
         case .unknown(let message):
             string = message
         @unknown default:
@@ -37,7 +40,7 @@ enum Error: Swift.Error {
 
 extension Error {
     
-    enum HTTPError: CustomStringConvertible {
+    enum HTTPError: RawRepresentable, CustomStringConvertible {
         case serverError(Int)
         case clientError(Int)
         
@@ -54,7 +57,9 @@ extension Error {
             return string
         }
         
-        init?(rawValue: Int) {
+        typealias RawValue = Int
+        
+        init?(rawValue: RawValue) {
             switch rawValue {
             case 400..<500:
                 self = .clientError(rawValue)
@@ -64,9 +69,21 @@ extension Error {
                 return nil
             }
         }
+        
+        var rawValue: RawValue {
+            let value: Int
+            switch self {
+            case .clientError(let number):
+                value = number
+            case .serverError(let number):
+                value = number
+            }
+            return value
+        }
     }
     
-    enum URLLoadingError: CustomStringConvertible {
+    enum URLLoadingError: RawRepresentable, CustomStringConvertible {
+        
         case notConnectedToInternet
         case badURL
         case cannotConnectToHost
@@ -95,7 +112,9 @@ extension Error {
             return string
         }
         
-        init(rawValue: Int) {
+        typealias RawValue = Int
+        
+        init(rawValue: RawValue) {
             let value = -rawValue
             switch value {
             case 1000:
@@ -112,6 +131,26 @@ extension Error {
                 self = .unknown
             }
         }
+        
+        var rawValue: RawValue {
+            var value: Int
+            switch self {
+            case .badURL:
+                value = 1000
+            case .cannotFindHost:
+                value = 1003
+            case .cannotConnectToHost:
+                value = 1004
+            case .notConnectedToInternet:
+                value = 1009
+            case .badServerResponse:
+                value = 1011
+            default:
+                value = 10000
+            }
+            value = -value
+            return value
+        }
     }
 }
 
@@ -127,6 +166,7 @@ extension Error {
 extension Error {
     
     static let FlickrAPIDomain = "com.flickr.api"
+    static let ApplicationDomain = "com.application.flickr"
     
     init?(error: Swift.Error?) {
         guard let error = error as NSError? else {
@@ -136,6 +176,8 @@ extension Error {
             self = Error.urlLoading(Error.URLLoadingError.init(rawValue: error.code))
         } else if error.domain == Error.FlickrAPIDomain {
             self = Error.flickrApi(error.code, error.localizedDescription)
+        } else if error.domain == Error.ApplicationDomain {
+            self = Error.noData(error.localizedDescription)
         } else if error is DecodingError {
             self = Error.parsing(error.localizedDescription)
         } else {

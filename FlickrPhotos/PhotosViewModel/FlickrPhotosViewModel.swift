@@ -48,6 +48,7 @@ extension FetchMode : RawRepresentable, Equatable {
 
 enum ViewState {
     case launched
+    case empty(String)
     case fetching(FetchMode)
     case success(FetchMode)
     case error(FetchMode, String)
@@ -67,6 +68,8 @@ extension ViewState: RawRepresentable, Equatable {
             self = .success(mode!)
         case let (3, mode, message) where (mode != nil && message != nil):
             self = .error(mode!, message!)
+        case let (4, _, message):
+            self = .empty(message ?? "")
         default:
             return nil
         }
@@ -83,6 +86,8 @@ extension ViewState: RawRepresentable, Equatable {
             result = (2, mode, nil)
         case .error(let mode, let string):
             result = (3, mode, string)
+        case .empty(let string):
+            result = (4,nil,string)
         @unknown default:
             result = (-1, nil, nil)
         }
@@ -173,13 +178,19 @@ class FlickrPhotosViewModel: PhotosViewModel {
             case .success(let data):
                 switch fetchMode {
                 case .refresh:
-                    self.photos = data.photo
+                    self.photos = data.photo                   
                 case .loadMore:
                     self.photos.append(contentsOf: data.photo)
                 }
                 self.changeViewState(ViewState.success(fetchMode))
             case .failure(let error):
-                self.changeViewState(ViewState.error(fetchMode, error.localizedDescription))
+                switch error {
+                case .noData(_):
+                    self.photos.removeAll()
+                    self.changeViewState(ViewState.empty(error.localizedDescription))
+                default:
+                    self.changeViewState(ViewState.error(fetchMode, error.localizedDescription))
+                }
             }
         }
     }
