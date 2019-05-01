@@ -8,14 +8,16 @@
 
 import UIKit
 
-struct FlickrPhotosCellViewModel {
-    var path: String?    
-}
-
 class FlickrPhotosCell: UICollectionViewCell {
+    
+    struct ViewModel {
+        var path: String?
+        var placeholder: String?
+    }
 
     @IBOutlet weak var image: UIImageView!
-    private var viewModel: FlickrPhotosCellViewModel!
+    private var viewModel: ViewModel!
+    private var downloader: ImageDownloader! = ImageDownloader.sharedImageDownloader
     
     override func awakeFromNib() {
         super.awakeFromNib()
@@ -27,12 +29,13 @@ class FlickrPhotosCell: UICollectionViewCell {
         self.image.image = UIImage()
     }
     
-    func setup(viewModel: FlickrPhotosCellViewModel) {
+    func feedCell(with viewModel: ViewModel) {
         self.viewModel = viewModel
         guard let path = viewModel.path else {
             return
         }
-        ImageDownloader.sharedImageDownloader.fetch(path: path, placeHolderImage: UIImage.init(named: "placeholder")) { [weak self] (image) in
+        let placehoder: UIImage? = (viewModel.placeholder != nil) ? UIImage.init(named: viewModel.placeholder!) : nil
+        downloader.download(path: path, placeHolderImage: placehoder) { [weak self] (image) in
             if let self = self, path == viewModel.path {
                 self.image.image = image
             }

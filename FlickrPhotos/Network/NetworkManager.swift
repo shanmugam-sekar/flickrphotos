@@ -19,10 +19,10 @@ struct Request {
     var path: String
     var parameters: [String: String]?
     var method: HTTPMethod
-}
-
-enum HTTPMethod: String {
-    case get = "GET"
+    
+    enum HTTPMethod: String {
+        case get = "GET"
+    }
 }
 
 class FlickrPhotosNetworkManager: NetworkManager {

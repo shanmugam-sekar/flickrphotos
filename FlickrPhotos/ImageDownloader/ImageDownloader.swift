@@ -23,8 +23,8 @@ class ImageDownloader {
         self.networkManager = networkManager
     }
     
-    func fetch(path: String, placeHolderImage: UIImage?, completion: @escaping (UIImage) -> Void) {
-        if let cachedData = cache.get(key: path), let image = UIImage.init(data: cachedData) {
+    func download(path: String, placeHolderImage: UIImage?, completion: @escaping (UIImage) -> Void) {
+        if let cachedData = cache.getData(forKey: path), let image = UIImage.init(data: cachedData) {
             completion(image)
             return
         }
@@ -33,7 +33,7 @@ class ImageDownloader {
         
         networkManager.download(request: request) { [unowned self] (result) in
             if let data = try? result.get(), let image = UIImage.init(data: data) {
-                self.cache.set(data: data, key: request.path)
+                self.cache.setData(data, forKey: request.path)
                 DispatchQueue.main.async {
                     completion(image)
                 }

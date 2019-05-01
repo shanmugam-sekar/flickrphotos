@@ -59,9 +59,9 @@ class FlickrPhotosViewModel: NSObject {
         return photos.count
     }
     
-    func getPhotosCellViewModel(at index: Int) -> FlickrPhotosCellViewModel {
+    func getPhotosCellViewModel(at index: Int) -> FlickrPhotosCell.ViewModel {
         let photo = photos[index]
-        var viewModel = FlickrPhotosCellViewModel()
+        var viewModel = FlickrPhotosCell.ViewModel()
         viewModel.path = photo.path
         return viewModel
     }

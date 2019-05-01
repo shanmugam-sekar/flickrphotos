@@ -10,9 +10,9 @@ import Foundation
 
 protocol Cache {
     func configure(maxMemory : Int)
-    func get(key: String) -> Data?
-    func set(data: Data?, key: String)
-    func clear()
+    func getData(forKey key: String) -> Data?
+    func setData(_ data: Data?,forKey key: String)
+    func clearData()
 }
 
 class SimpleCache: Cache {
@@ -30,11 +30,11 @@ class SimpleCache: Cache {
         cache.totalCostLimit = maxMemory
     }
     
-    func get(key: String) -> Data? {
+    func getData(forKey key: String) -> Data? {
         return cache.object(forKey: NSString.init(string: key)) as Data?
     }
     
-    func set(data: Data?, key: String) {
+    func setData(_ data: Data?,forKey key: String) {
         guard let data = data else {
             return
         }
@@ -42,7 +42,7 @@ class SimpleCache: Cache {
         cache.setObject(finalData, forKey: NSString.init(string: key), cost: finalData.length)
     }
     
-    func clear() {
+    func clearData() {
         cache.removeAllObjects()
     }
 }

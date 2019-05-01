@@ -10,7 +10,7 @@ import Foundation
 
 protocol PhotosSearchAPI {
     init(networkManager: NetworkManager , apiInfo: PhotosSearchAPIInfo)
-    func fetchPhotosList(queryParams: QueryParams, completion: @escaping PhotoSearchService.searchAPIResult)
+    func fetchPhotos(queryParams: QueryParams, completion: @escaping PhotoSearchService.searchAPIResult)
 }
 
 struct FlickrPhotosSearchAPI: PhotosSearchAPI {
@@ -23,7 +23,7 @@ struct FlickrPhotosSearchAPI: PhotosSearchAPI {
         self.apiInfo = apiInfo
     }
     
-    func fetchPhotosList(queryParams: QueryParams, completion: @escaping PhotoSearchService.searchAPIResult) {
+    func fetchPhotos(queryParams: QueryParams, completion: @escaping PhotoSearchService.searchAPIResult) {
         
         let parameters = getParametersKeyValues(queryParams: queryParams, apiInfo: apiInfo)
         let request = Request(path: apiInfo.path, parameters: parameters, method: .get)

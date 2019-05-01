@@ -28,7 +28,7 @@ struct FlickrPhotoSearchService: PhotoSearchService {
     }
     
     func fetchPhotos(params: QueryParams, completion: @escaping PhotoSearchService.searchAPIResult) {
-        api.fetchPhotosList(queryParams: params) { (result) in
+        api.fetchPhotos(queryParams: params) { (result) in
             completion(result)
         }
     }

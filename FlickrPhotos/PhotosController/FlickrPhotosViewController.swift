@@ -122,7 +122,7 @@ extension FlickrPhotosViewController: UICollectionViewDelegate, UICollectionView
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: viewModel.photosListCellIdentifier, for: indexPath)
         if let photoCell = cell as? FlickrPhotosCell {
-            photoCell.setup(viewModel: viewModel.getPhotosCellViewModel(at: indexPath.row))
+            photoCell.feedCell(with: viewModel.getPhotosCellViewModel(at: indexPath.row))
         }
         return cell
     }
