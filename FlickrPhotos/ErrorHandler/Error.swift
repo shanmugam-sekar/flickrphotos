@@ -32,7 +32,7 @@ enum Error: Swift.Error {
         case .unknown(let message):
             string = message
         @unknown default:
-            string = ""
+            fatalError()
         }
         return string
     }
@@ -52,7 +52,7 @@ extension Error {
             case .clientError(_):
                 string = "API error"
             @unknown default:
-                string = "Unknown error occured"
+                fatalError()
             }
             return string
         }

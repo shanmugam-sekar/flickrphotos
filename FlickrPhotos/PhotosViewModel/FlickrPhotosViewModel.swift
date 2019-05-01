@@ -36,7 +36,7 @@ extension FetchMode : RawRepresentable, Equatable {
         case .loadMore:
             value = (1, nil)
         @unknown default:
-            return (-1, nil)
+            fatalError()
         }
         return value
     }
@@ -89,7 +89,7 @@ extension ViewState: RawRepresentable, Equatable {
         case .empty(let string):
             result = (4,nil,string)
         @unknown default:
-            result = (-1, nil, nil)
+            fatalError()
         }
         return result
     }
