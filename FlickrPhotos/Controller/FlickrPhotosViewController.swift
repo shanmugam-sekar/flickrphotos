@@ -102,7 +102,7 @@ class FlickrPhotosViewController: UIViewController {
         
         loader.leadingAnchor.constraint(equalTo: view.leadingAnchor).isActive = true
         loader.trailingAnchor.constraint(equalTo: view.trailingAnchor).isActive = true
-        loader.bottomAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
+        loader.bottomAnchor.constraint(equalTo: view.layoutMarginsGuide.bottomAnchor).isActive = true
         loader.heightAnchor.constraint(equalToConstant: 50.0).isActive = true
 
         self.loader = loader

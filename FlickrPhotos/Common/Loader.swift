@@ -27,7 +27,7 @@ class Loader: UIView {
         
         let activityIndicatorView = UIActivityIndicatorView.init(style: .gray)
         activityIndicatorView.translatesAutoresizingMaskIntoConstraints = false
-        activityIndicatorView.tintColor = UIColor.white
+        activityIndicatorView.color = UIColor.white
         addSubview(activityIndicatorView)
         
         let label = UILabel.init(frame: .zero)
