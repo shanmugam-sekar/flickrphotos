@@ -118,7 +118,7 @@ protocol PhotosViewModel: class {
     init(service: PhotoSearchService)
     var count: Int {get}
     var delegate: PhotosViewModelDelegate? {get set}
-    func getPhotoViewModel(at index: Int) -> FlickrPhotosCell.ViewModel
+    func getPhotoViewModel(at index: Int) -> FlickrPhotosCell.ViewModel?
     func fetchPhotos(fetchMode: FetchMode)
     func emitEvents()
 }
@@ -154,7 +154,10 @@ class FlickrPhotosViewModel: PhotosViewModel {
         delegate?.onStateChange(viewState)
     }
     
-    func getPhotoViewModel(at index: Int) -> FlickrPhotosCell.ViewModel {
+    func getPhotoViewModel(at index: Int) -> FlickrPhotosCell.ViewModel? {
+        guard index < count else {
+            return nil
+        }
         let photo = photos[index]
         var viewModel = FlickrPhotosCell.ViewModel()
         viewModel.path = photo.path
@@ -185,7 +188,7 @@ class FlickrPhotosViewModel: PhotosViewModel {
                 self.changeViewState(ViewState.success(fetchMode))
             case .failure(let error):
                 switch error {
-                case .noData(_):
+                case .noDataError(_):
                     self.photos.removeAll()
                     self.changeViewState(ViewState.empty(error.localizedDescription))
                 default:
@@ -195,7 +198,7 @@ class FlickrPhotosViewModel: PhotosViewModel {
         }
     }
     
-    func getPageNumber(fetchMode: FetchMode, currentPage: Int) -> Int {
+    private func getPageNumber(fetchMode: FetchMode, currentPage: Int) -> Int {
         var pageNumber = 0
         switch fetchMode {
         case .refresh(_):
@@ -206,7 +209,7 @@ class FlickrPhotosViewModel: PhotosViewModel {
         return pageNumber
     }
     
-    func getSearchQuery(fetchMode: FetchMode, currentQuery: String) -> String {
+    private func getSearchQuery(fetchMode: FetchMode, currentQuery: String) -> String {
         let query: String
         switch fetchMode {
         case .refresh(let x):

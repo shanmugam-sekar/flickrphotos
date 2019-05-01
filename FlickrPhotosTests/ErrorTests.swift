@@ -21,7 +21,7 @@ class ErrorTests: XCTestCase {
         }
         if let error = Error.init(error: flickrError) {
             switch error {
-            case .flickrApi(let code, let message):
+            case .apiError(let code, let message):
                 XCTAssert(code == 3, "Error enum created with error code mismatch")
                 XCTAssert(message == errorMessage,  "Error enum created with error message mismatch")
                 XCTAssert(error.localizedDescription == errorMessage, "Error enum created with error message mismatch")
@@ -41,7 +41,7 @@ class ErrorTests: XCTestCase {
         XCTAssert(url != nil, "invalid reponse")
         if let error = Error.init(response: response!) {
             switch error {
-            case .http(let httpError) where httpError.rawValue == 401:
+            case .httpError(let httpError) where httpError.rawValue == 401:
                 XCTAssert(httpError.description == "API error", "Error enum created with error message mismatch")
                 XCTAssert(true)
             default:
@@ -60,7 +60,7 @@ class ErrorTests: XCTestCase {
         XCTAssert(url != nil, "invalid reponse")
         if let error = Error.init(response: response!) {
             switch error {
-            case .http(let httpError) where httpError.rawValue == 500:
+            case .httpError(let httpError) where httpError.rawValue == 500:
                 XCTAssert(httpError.description == "Internal server error", "Error enum created with error message mismatch")
                 XCTAssert(true)
             default:
@@ -96,7 +96,7 @@ class ErrorTests: XCTestCase {
         let internetNotConnectedError = NSError.init(domain: NSURLErrorDomain, code: -1009, userInfo: nil)
         if let error = Error.init(error: internetNotConnectedError) {
             switch error {
-            case .urlLoading(let urlLoadingError) where urlLoadingError.rawValue == -1009:
+            case .urlLoadingError(let urlLoadingError) where urlLoadingError.rawValue == -1009:
                 if urlLoadingError.description == "Please check your internet connection" {
                     XCTAssert(true)
                 } else {
@@ -116,7 +116,7 @@ class ErrorTests: XCTestCase {
         let noDataError = NSError.init(domain: Error.ApplicationDomain, code: 100, userInfo: [NSLocalizedDescriptionKey: message])
         if let error = Error.init(error: noDataError) {
             switch error {
-            case .noData(_):
+            case .noDataError(_):
                 XCTAssert(true)
             default:
                 XCTFail("Invalid error enum created")

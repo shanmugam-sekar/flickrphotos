@@ -16,7 +16,6 @@
 		644767462274DC1100549DC4 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 644767452274DC1100549DC4 /* Assets.xcassets */; };
 		644767492274DC1100549DC4 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 644767472274DC1100549DC4 /* LaunchScreen.storyboard */; };
 		644767512274DCB800549DC4 /* ImageDownloader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 644767502274DCB800549DC4 /* ImageDownloader.swift */; };
-		644767592274E42D00549DC4 /* FlickrPhotosTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 644767582274E42D00549DC4 /* FlickrPhotosTests.swift */; };
 		644767612274E46800549DC4 /* ImageCacheTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 644767602274E46800549DC4 /* ImageCacheTests.swift */; };
 		644767632274E51900549DC4 /* uber.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 644767622274E51900549DC4 /* uber.jpg */; };
 		64476765227628CD00549DC4 /* NetworkManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64476764227628CD00549DC4 /* NetworkManager.swift */; };
@@ -63,7 +62,6 @@
 		6447674A2274DC1100549DC4 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		644767502274DCB800549DC4 /* ImageDownloader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageDownloader.swift; sourceTree = "<group>"; };
 		644767562274E42D00549DC4 /* FlickrPhotosTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FlickrPhotosTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		644767582274E42D00549DC4 /* FlickrPhotosTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlickrPhotosTests.swift; sourceTree = "<group>"; };
 		6447675A2274E42D00549DC4 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		644767602274E46800549DC4 /* ImageCacheTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageCacheTests.swift; sourceTree = "<group>"; };
 		644767622274E51900549DC4 /* uber.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = uber.jpg; sourceTree = "<group>"; };
@@ -128,9 +126,9 @@
 			isa = PBXGroup;
 			children = (
 				6447673E2274DC0E00549DC4 /* AppDelegate.swift */,
-				645089D322788B8800A2880E /* PhotosController */,
-				645089D422788BB000A2880E /* PhotosViewModel */,
-				645089D522788BC500A2880E /* PhotosCell */,
+				645089D322788B8800A2880E /* Controller */,
+				645089D422788BB000A2880E /* ViewModel */,
+				645089D522788BC500A2880E /* Cell */,
 				6447678822778E5B00549DC4 /* Models */,
 				6447678622778E1600549DC4 /* Service */,
 				645089D622788BE500A2880E /* API */,
@@ -152,7 +150,6 @@
 			isa = PBXGroup;
 			children = (
 				645089DA22788CA100A2880E /* Resources */,
-				644767582274E42D00549DC4 /* FlickrPhotosTests.swift */,
 				644767602274E46800549DC4 /* ImageCacheTests.swift */,
 				64FD94E02277A20500231BF5 /* ParserTests.swift */,
 				640B84B1227A202400177335 /* ErrorTests.swift */,
@@ -198,29 +195,29 @@
 			path = Models;
 			sourceTree = "<group>";
 		};
-		645089D322788B8800A2880E /* PhotosController */ = {
+		645089D322788B8800A2880E /* Controller */ = {
 			isa = PBXGroup;
 			children = (
 				644767402274DC0E00549DC4 /* FlickrPhotosViewController.swift */,
 			);
-			path = PhotosController;
+			path = Controller;
 			sourceTree = "<group>";
 		};
-		645089D422788BB000A2880E /* PhotosViewModel */ = {
+		645089D422788BB000A2880E /* ViewModel */ = {
 			isa = PBXGroup;
 			children = (
 				644767782277559400549DC4 /* FlickrPhotosViewModel.swift */,
 			);
-			path = PhotosViewModel;
+			path = ViewModel;
 			sourceTree = "<group>";
 		};
-		645089D522788BC500A2880E /* PhotosCell */ = {
+		645089D522788BC500A2880E /* Cell */ = {
 			isa = PBXGroup;
 			children = (
 				6447677A2277572500549DC4 /* FlickrPhotosCell.swift */,
 				6447677B2277572500549DC4 /* FlickrPhotosCell.xib */,
 			);
-			path = PhotosCell;
+			path = Cell;
 			sourceTree = "<group>";
 		};
 		645089D622788BE500A2880E /* API */ = {
@@ -398,7 +395,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				644767612274E46800549DC4 /* ImageCacheTests.swift in Sources */,
-				644767592274E42D00549DC4 /* FlickrPhotosTests.swift in Sources */,
 				64FD94E72277AA7300231BF5 /* ViewModelTests.swift in Sources */,
 				640B84B4227A31F100177335 /* ModelTests.swift in Sources */,
 				640B84B2227A202400177335 /* ErrorTests.swift in Sources */,

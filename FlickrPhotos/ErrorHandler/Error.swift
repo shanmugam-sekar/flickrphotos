@@ -9,27 +9,31 @@
 import Foundation
 
 enum Error: Swift.Error {
-    case http(HTTPError)
-    case urlLoading(URLLoadingError)
-    case flickrApi(Int, String)
-    case parsing(String)
-    case noData(String)
-    case unknown(String)
+    // represent status code error.
+    case httpError(HTTPError)
+    //represent URL loading system defined by apple like no internet.
+    case urlLoadingError(URLLoadingError)
+    //represent error getting from flickr api
+    case apiError(Int, String)
+    //represent decodable failure error
+    case parsingError(String)
+    case noDataError(String)
+    case unknownError(String)
     
     var localizedDescription: String {
         let string: String
         switch self {
-        case .http(let http):
+        case .httpError(let http):
             string = http.description
-        case .urlLoading(let urlLoading):
+        case .urlLoadingError(let urlLoading):
             string = urlLoading.description
-        case .flickrApi(_, let message):
+        case .apiError(_, let message):
             string = message
-        case .parsing(let message):
+        case .parsingError(let message):
             string = message
-        case .noData(let message):
+        case .noDataError(let message):
             string = message
-        case .unknown(let message):
+        case .unknownError(let message):
             string = message
         @unknown default:
             fatalError()
@@ -159,7 +163,7 @@ extension Error {
         guard let response = response as? HTTPURLResponse, let httpError = Error.HTTPError.init(rawValue: response.statusCode) else {
             return nil
         }
-        self = Error.http(httpError)
+        self = Error.httpError(httpError)
     }
 }
 
@@ -173,15 +177,15 @@ extension Error {
             return nil
         }
         if error.domain == NSURLErrorDomain {
-            self = Error.urlLoading(Error.URLLoadingError.init(rawValue: error.code))
+            self = Error.urlLoadingError(Error.URLLoadingError.init(rawValue: error.code))
         } else if error.domain == Error.FlickrAPIDomain {
-            self = Error.flickrApi(error.code, error.localizedDescription)
+            self = Error.apiError(error.code, error.localizedDescription)
         } else if error.domain == Error.ApplicationDomain {
-            self = Error.noData(error.localizedDescription)
+            self = Error.noDataError(error.localizedDescription)
         } else if error is DecodingError {
-            self = Error.parsing(error.localizedDescription)
+            self = Error.parsingError(error.localizedDescription)
         } else {
-            self = Error.unknown(error.localizedDescription)
+            self = Error.unknownError(error.localizedDescription)
         }
     }
 }

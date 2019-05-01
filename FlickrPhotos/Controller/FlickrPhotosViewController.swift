@@ -165,8 +165,8 @@ extension FlickrPhotosViewController : UISearchBarDelegate {
 extension FlickrPhotosViewController: UICollectionViewDelegate, UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: FlickrPhotosViewController.Constants.photosListCellIdentifier, for: indexPath)
-        if let photoCell = cell as? FlickrPhotosCell {
-            photoCell.feedCell(with: viewModel.getPhotoViewModel(at: indexPath.row))
+        if let photoCell = cell as? FlickrPhotosCell, let viewModel = viewModel.getPhotoViewModel(at: indexPath.row) {
+            photoCell.feedCell(with: viewModel)
         }
         return cell
     }
