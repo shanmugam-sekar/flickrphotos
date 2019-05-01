@@ -1,49 +1,48 @@
-# flickrphotos
-you can search photos from flickr
 
-# Enviroment :-
-  XCode 10.2.1 used while developing.
+lets search photos using flickr api.
 
-# Models :-
-  Photo, PhotosList, FlickrPhotoSearchResponse - handled success and failure flickr responses.
+This app used Swift 5 and XCode 10.2.1.
   
-# FlickrPhotosViewController :- 
-  responsible for the UI representation.
+### Controller 
+  ### FlickrPhotosViewController
+    - responsible for the UI representation. UICollectionView is used to display photos list.
 
-# FlickrPhotosViewModel :-
-  viewcontroller operates on values from this viewmodel class. responsible to communicate with service class.
+### ViewModel
+  ### FlickrPhotosViewModel
+    - viewmodel delegates the viewstate changes to controller and controller reacts to it.
+    - view communicates with service layer through viewmodel.
 
-#  FlickrPhotoSearchService :-
-  calls API layer. Service layer will abstract fetching data part . data will come from either api or some persistance storage. 
+### Service
+  ### FlickrPhotoSearchService
+    - responsible for providing data. data can either come from api layer or from persistance storage layer.  
+    - currently service fetching data from api layer.
 
-# FlickrPhotosSearchAPI :-
-  calls Network manager layer and responsible for parsing the response.
-  
-# FlickrPhotosNetworkManager :-
-  calls underlying ios network api and prepares requests.
+### API
+  ### FlickrPhotosSearchAPI 
+    - communicates with network layer and parsing the response data.
+  ### FlickrPhotosSearchAPIInfo
+    - provides flickr api paramters.
+    
+### Parser
+  ### Parser
+    - generic parser implementation with Decodable protocol conformance.
 
-# ImageDownloader :- 
-  responsible for image downloading and caching it. 
-  
-
-# NSCache :-
-  Used to implement image caching. 
-  Default cache size set to 50MB but it is configurable.
-  Contents of Cache will be automatically cleared on low memory sitations.
-  UIImage is stored as Data in NSCache.
-  
-# Unit Testing :-
-  written for parser to test with images data and error data.
-  written for simplecache with cache size set to minimal.
-  written for viewmodel to test some basic properties.
-  still have to check and needs to be extended.
-  
-  Followed MVVM & POP. Service , API , Network manager will adopt to their respective protocols. So that we can switch the implementation through DI.
-  
-  Used basic Observable concept to implement communication between view and viewmodel (unidirectional).
-  
-  Models implements Decodable protocol.
-  
+### Network
+  ### FlickrPhotosNetworkManager
+    - network calls goes here. urlsession api is used.
+    
+### Error
+  ### Error
+    - error handling goes here like http error(status code), url loading error, flickr api error, etc.
+    
+### Downloader
+  ### ImageDownloader 
+    - handles image downloading and caching.
+  ### Cache
+    - used NSCache.
+    - Default cache size set to 50MB but it is configurable.
+    - Contents of Cache will be automatically cleared on low memory sitations.
+    - UIImage is stored as Data in NSCache.
   
   
   
