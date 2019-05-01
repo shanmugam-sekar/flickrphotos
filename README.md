@@ -3,39 +3,39 @@ lets search photos using flickr api.
 
 This app used Swift 5 and XCode 10.2.1.
   
-### Controller 
+### `Controller`
   ##### FlickrPhotosViewController
     - responsible for the UI representation. UICollectionView is used to display photos list.
 
-### ViewModel
+### `ViewModel`
   ##### FlickrPhotosViewModel
     - viewmodel delegates the viewstate changes to controller and controller reacts to it.
     - view communicates with service layer through viewmodel.
 
-### Service
+### `Service`
   ##### FlickrPhotoSearchService
     - responsible for providing data. data can either come from api layer or from persistance storage layer.  
     - currently service fetching data from api layer.
 
-### API
+### `API`
   ##### FlickrPhotosSearchAPI 
     - communicates with network layer and parsing the response data.
   ##### FlickrPhotosSearchAPIInfo
     - provides flickr api paramters.
     
-### Parser
+### `Parser`
   ##### Parser
     - generic parser implementation with Decodable protocol conformance.
 
-### Network
+### `Network`
   ##### FlickrPhotosNetworkManager
     - network calls goes here. urlsession api is used.
     
-### Error
+### `Error`
   ##### Error
     - error handling goes here like http error(status code), url loading error, flickr api error, etc.
     
-### Downloader
+### `Downloader`
   ##### ImageDownloader 
     - handles image downloading and caching.
   ##### Cache
