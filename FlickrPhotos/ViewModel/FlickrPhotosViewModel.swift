@@ -189,8 +189,12 @@ class FlickrPhotosViewModel: PhotosViewModel {
             case .failure(let error):
                 switch error {
                 case .noDataError(_):
-                    self.photos.removeAll()
-                    self.changeViewState(ViewState.empty(error.localizedDescription))
+                    if fetchMode == FetchMode.refresh(self.searchQuery) {
+                        self.photos.removeAll()
+                        self.changeViewState(ViewState.empty(error.localizedDescription))
+                    } else {
+                        self.changeViewState(ViewState.success(fetchMode))
+                    }
                 default:
                     self.changeViewState(ViewState.error(fetchMode, error.localizedDescription))
                 }
